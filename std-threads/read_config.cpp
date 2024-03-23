@@ -12,7 +12,17 @@ std::unordered_map<std::string, size_t> read_config(
 	std::ifstream config_file("config.json");
 	if (!config_file.is_open())
 	{
-		throw std::runtime_error("Could not open config file" + filename);
+		//throw std::runtime_error("Could not open config file" + filename);
+
+		std::cout << "Could not open config file " << filename << '\n';
+		std::cout << "!!!!!!!!!!!!!!!!!!Returning default configuration!!!!!!!!!!!!!!!!!!!!!!!\n";
+		std::cout << "!!!!!!!!!!!!!!!!!!Returning default configuration!!!!!!!!!!!!!!!!!!!!!!!\n";
+		std::cout << "!!!!!!!!!!!!!!!!!!Returning default configuration!!!!!!!!!!!!!!!!!!!!!!!\n";
+
+		// return a default configuration
+		return {
+			{"radix_tree", 1}, {"unique", 1}, {"sorting", 1}, {"morton", 1}
+		};
 	}
 
 	// Parse JSON
@@ -26,7 +36,6 @@ std::unordered_map<std::string, size_t> read_config(
 	for (auto& stage : config["stages"])
 	{
 		std::string stage_name = stage["name"];
-		bool is_gpu = stage["device"] == "GPU";
 		int num_threads = stage["num_threads"];
 
 		// Store stage configuration in hashtable

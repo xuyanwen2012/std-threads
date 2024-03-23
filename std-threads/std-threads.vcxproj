@@ -76,6 +76,8 @@
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="octree.cpp" />
+    <ClCompile Include="radix_tree.cpp" />
     <ClCompile Include="read_config.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -84,6 +86,9 @@
     <ClInclude Include="json.hpp" />
     <ClInclude Include="morton.h" />
     <ClInclude Include="BS_thread_pool.hpp" />
+    <ClInclude Include="octree.h" />
+    <ClInclude Include="oct_v2.h" />
+    <ClInclude Include="radix_tree.h" />
     <ClInclude Include="read_config.hpp" />
   </ItemGroup>
   <ItemGroup>
