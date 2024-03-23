@@ -76,15 +76,18 @@
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="read_config.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BS_thread_pool_utils.hpp" />
     <ClInclude Include="defines.h" />
+    <ClInclude Include="json.hpp" />
     <ClInclude Include="morton.h" />
     <ClInclude Include="BS_thread_pool.hpp" />
+    <ClInclude Include="read_config.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="config.yaml" />
+    <None Include="config.json" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile>

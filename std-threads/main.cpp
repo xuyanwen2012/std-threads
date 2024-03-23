@@ -4,35 +4,36 @@
 #include <algorithm>
 #include <mutex>
 #include <condition_variable>
+#include <unordered_map>
 
-//#include <pthread.h> // assume on linux
+#include <pthread.h> // assume on linux
 
 #include "morton.h"
 
 #include "BS_thread_pool.hpp"
 #include "BS_thread_pool_utils.hpp"
+#include "read_config.hpp"
 
-//
-//void stick_this_thread_to_core(
-//	std::thread::native_handle_type thread_native_handle, size_t core_id)
-//{
-//	cpu_set_t cpu_set;
-//	CPU_ZERO(&cpu_set);
-//	CPU_SET(core_id, &cpu_set);
-//
-//	auto ret =
-//		pthread_setaffinity_np(thread_native_handle, sizeof(cpu_set_t), &cpu_set);
-//	if (ret != 0)
-//	{
-//		std::cerr << "Error calling pthread_setaffinity_np: " << ret << '\n';
-//	}
-//}
 
+void stick_this_thread_to_core(
+	std::thread::native_handle_type thread_native_handle, size_t core_id)
+{
+	cpu_set_t cpu_set;
+	CPU_ZERO(&cpu_set);
+	CPU_SET(core_id, &cpu_set);
+
+	auto ret =
+		pthread_setaffinity_np(thread_native_handle, sizeof(cpu_set_t), &cpu_set);
+	if (ret != 0)
+	{
+		std::cerr << "Error calling pthread_setaffinity_np: " << ret << '\n';
+	}
+}
 
 class barrier
 {
 public:
-	explicit barrier(const int count) : thread_count_(count), count_(count), generation_(0)
+	explicit barrier(const size_t count) : thread_count_(count), count_(count), generation_(0)
 	{
 	}
 
@@ -55,8 +56,8 @@ public:
 private:
 	std::mutex mutex_;
 	std::condition_variable cond_;
-	int thread_count_;
-	int count_;
+	size_t thread_count_;
+	size_t count_;
 	int generation_;
 };
 
@@ -131,11 +132,11 @@ struct
 	std::mutex mtx;
 	int bucket[BASE] = {}; // shared among threads
 	std::condition_variable cv;
-	int current_thread = 0;
+	size_t current_thread = 0;
 } sort;
 
 void k_binning_pass(
-	const int tid,
+	const size_t tid,
 	barrier& barrier,
 	const morton_t* u_sort_begin,
 	const morton_t* u_sort_end,
@@ -296,9 +297,8 @@ private:
 
 [[nodiscard]]
 BS::multi_future<void>
-//void
 dispatch_binning_pass(
-	const int n_threads,
+	const size_t n_threads,
 	barrier& barrier,
 	const std::vector<morton_t>& u_sort,
 	std::vector<morton_t>& u_sort_alt,
@@ -331,32 +331,46 @@ dispatch_binning_pass(
 }
 
 
-static std::unordered_map<std::string, size_t> config = {
-	{"morton", 1},
-	{"sort", 2},
-	{"unique", 1},
-	{"radix_tree", 0}
-};
-
-
 int main(const int argc, const char* argv[])
 {
-	auto n_threads = 1u;
+	auto test_n_threads = 1u;
 	if (argc > 1)
 	{
-		n_threads = std::stoi(argv[1]);
+		test_n_threads = std::stoi(argv[1]);
 	}
 
-	const auto max_threads = std::thread::hardware_concurrency();
+	const auto max_cores = std::thread::hardware_concurrency();
 
-	std::cout << "Number of threads: " << n_threads << '\n';
-	std::cout << "Max threads: " << max_threads << '\n';
 
-	if (n_threads > max_threads)
+	std::cout << "Max CPU Cores: " << max_cores << '\n';
+
+	if (test_n_threads > max_cores)
 	{
 		std::cerr << "Number of threads exceeds max threads.\n";
 		return 1;
 	}
+
+	const auto config = read_config("config.json");
+
+	const auto morton_n_thread = config.at("morton");
+	const auto sort_n_thread = config.at("sorting");
+	const auto unique_n_thread = config.at("unique");
+	const auto brt_n_thread = config.at("radix_tree");
+
+	// make sure they add up to the total number of threads
+
+	if (const auto n_threads = morton_n_thread + sort_n_thread +
+			unique_n_thread + brt_n_thread;
+		n_threads > max_cores)
+	{
+		std::cerr << "Number of threads does not match the sum of the stages.\n";
+		return 1;
+	}
+
+	// ---------------------------------------------------------------------
+	// Initialization
+	// ---------------------------------------------------------------------
+
 
 	//constexpr auto n = 1 << 20; // ~1M
 	constexpr auto n = 1920 * 1080; // ~2M
@@ -365,7 +379,6 @@ int main(const int argc, const char* argv[])
 	constexpr auto range = 1024.0f;
 
 	std::vector<glm::vec4> u_points(n);
-
 	std::vector<morton_t> u_morton(n);
 	std::vector<morton_t> u_morton_alt(n);
 
@@ -379,22 +392,30 @@ int main(const int argc, const char* argv[])
 
 	BS::timer timer;
 
-	barrier sort_barrier(n_threads);
+	barrier sort_barrier(sort_n_thread);
+
+	// ---------------------------------------------------------------------
+	// Main
+	// ---------------------------------------------------------------------
 
 	timer.start();
 
-	dispatch_morton_code(n_threads, u_points, u_morton, min_coord, range).wait();
+	dispatch_morton_code(morton_n_thread, u_points, u_morton, min_coord, range).wait();
 
 	auto morton_timestamp = timer.current_ms();
 
-	dispatch_binning_pass(n_threads, sort_barrier, u_morton, u_morton_alt, 0).wait();
-	dispatch_binning_pass(n_threads, sort_barrier, u_morton_alt, u_morton, 8).wait();
-	dispatch_binning_pass(n_threads, sort_barrier, u_morton, u_morton_alt, 16).wait();
-	dispatch_binning_pass(n_threads, sort_barrier, u_morton_alt, u_morton, 24).wait();
+	dispatch_binning_pass(sort_n_thread, sort_barrier, u_morton, u_morton_alt, 0).wait();
+	dispatch_binning_pass(sort_n_thread, sort_barrier, u_morton_alt, u_morton, 8).wait();
+	dispatch_binning_pass(sort_n_thread, sort_barrier, u_morton, u_morton_alt, 16).wait();
+	dispatch_binning_pass(sort_n_thread, sort_barrier, u_morton_alt, u_morton, 24).wait();
 
 	auto sort_timestamp = timer.current_ms() - morton_timestamp;
 
 	timer.stop();
+
+	// ---------------------------------------------------------------------
+	// Validation
+	// ---------------------------------------------------------------------
 
 	std::cout << "==========================\n";
 	std::cout << " Total Time spent: " << timer.ms() << " ms\n";

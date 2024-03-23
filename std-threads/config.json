@@ -1,0 +1,20 @@
+{
+  "stages": [
+    {
+      "name": "morton",
+      "num_threads": 1
+    },
+    {
+      "name": "sorting",
+      "num_threads": 2
+    },
+    {
+      "name": "unique",
+      "num_threads": 1
+    },
+    {
+      "name": "radix_tree",
+      "num_threads": 2
+    }
+  ]
+}
