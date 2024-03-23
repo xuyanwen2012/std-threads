@@ -78,79 +78,100 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BS_thread_pool_utils.hpp" />
     <ClInclude Include="defines.h" />
     <ClInclude Include="morton.h" />
+    <ClInclude Include="BS_thread_pool.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="config.yaml" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile>
       <CppLanguageStandard>c++17</CppLanguageStandard>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>/home/yanwen/.xmake/packages/y/yaml-cpp/0.8.0/5cee0c2bc67a480fba56397b7957ccd9/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories>/home/yanwen/.xmake/packages/y/yaml-cpp/0.8.0/5cee0c2bc67a480fba56397b7957ccd9/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <ClCompile>
       <CppLanguageStandard>c++17</CppLanguageStandard>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>/home/yanwen/.xmake/packages/y/yaml-cpp/0.8.0/5cee0c2bc67a480fba56397b7957ccd9/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories>/home/yanwen/.xmake/packages/y/yaml-cpp/0.8.0/5cee0c2bc67a480fba56397b7957ccd9/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <ClCompile>
       <CppLanguageStandard>c++17</CppLanguageStandard>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>/home/yanwen/.xmake/packages/y/yaml-cpp/0.8.0/5cee0c2bc67a480fba56397b7957ccd9/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories>/home/yanwen/.xmake/packages/y/yaml-cpp/0.8.0/5cee0c2bc67a480fba56397b7957ccd9/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <ClCompile>
       <CppLanguageStandard>c++17</CppLanguageStandard>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>/home/yanwen/.xmake/packages/y/yaml-cpp/0.8.0/5cee0c2bc67a480fba56397b7957ccd9/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories>/home/yanwen/.xmake/packages/y/yaml-cpp/0.8.0/5cee0c2bc67a480fba56397b7957ccd9/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <CppLanguageStandard>c++17</CppLanguageStandard>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>/home/yanwen/.xmake/packages/y/yaml-cpp/0.8.0/5cee0c2bc67a480fba56397b7957ccd9/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories>/home/yanwen/.xmake/packages/y/yaml-cpp/0.8.0/5cee0c2bc67a480fba56397b7957ccd9/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <CppLanguageStandard>c++17</CppLanguageStandard>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>/home/yanwen/.xmake/packages/y/yaml-cpp/0.8.0/5cee0c2bc67a480fba56397b7957ccd9/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories>/home/yanwen/.xmake/packages/y/yaml-cpp/0.8.0/5cee0c2bc67a480fba56397b7957ccd9/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <ClCompile>
       <CppLanguageStandard>c++17</CppLanguageStandard>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>/home/yanwen/.xmake/packages/y/yaml-cpp/0.8.0/5cee0c2bc67a480fba56397b7957ccd9/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories>/home/yanwen/.xmake/packages/y/yaml-cpp/0.8.0/5cee0c2bc67a480fba56397b7957ccd9/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <ClCompile>
       <CppLanguageStandard>c++17</CppLanguageStandard>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>/home/yanwen/.xmake/packages/y/yaml-cpp/0.8.0/5cee0c2bc67a480fba56397b7957ccd9/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories>/home/yanwen/.xmake/packages/y/yaml-cpp/0.8.0/5cee0c2bc67a480fba56397b7957ccd9/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
