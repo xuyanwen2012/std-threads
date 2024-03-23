@@ -4,38 +4,29 @@
 #include <algorithm>
 #include <mutex>
 #include <condition_variable>
-#include <pthread.h> // assume on linux
+
+//#include <pthread.h> // assume on linux
 
 #include "morton.h"
 
 #include "BS_thread_pool.hpp"
 #include "BS_thread_pool_utils.hpp"
 
-template <typename NumeratorT, typename DenominatorT>
-constexpr NumeratorT divide_and_round_up(const NumeratorT n,
-                                         const DenominatorT d)
-{
-	static_assert(
-		std::is_integral_v<NumeratorT> && std::is_integral_v<DenominatorT>,
-		"DivideAndRoundUp is only intended for integral types.");
-	// Static cast to undo integral promotion.
-	return static_cast<NumeratorT>(n / d + (n % d != 0 ? 1 : 0));
-}
-
-void stick_this_thread_to_core(
-	std::thread::native_handle_type thread_native_handle, size_t core_id)
-{
-	cpu_set_t cpu_set;
-	CPU_ZERO(&cpu_set);
-	CPU_SET(core_id, &cpu_set);
-
-	auto ret =
-		pthread_setaffinity_np(thread_native_handle, sizeof(cpu_set_t), &cpu_set);
-	if (ret != 0)
-	{
-		std::cerr << "Error calling pthread_setaffinity_np: " << ret << '\n';
-	}
-}
+//
+//void stick_this_thread_to_core(
+//	std::thread::native_handle_type thread_native_handle, size_t core_id)
+//{
+//	cpu_set_t cpu_set;
+//	CPU_ZERO(&cpu_set);
+//	CPU_SET(core_id, &cpu_set);
+//
+//	auto ret =
+//		pthread_setaffinity_np(thread_native_handle, sizeof(cpu_set_t), &cpu_set);
+//	if (ret != 0)
+//	{
+//		std::cerr << "Error calling pthread_setaffinity_np: " << ret << '\n';
+//	}
+//}
 
 
 class barrier
@@ -69,6 +60,7 @@ private:
 	int generation_;
 };
 
+
 // ---------------------------------------------------------------------
 // Global variables
 // ---------------------------------------------------------------------
@@ -82,6 +74,13 @@ void monitor_tasks()
 	                 pool.get_tasks_running(), " tasks running, ",
 	                 pool.get_tasks_queued(), " tasks queued.");
 }
+
+#ifdef NDEBUG
+#define DEBUG_PRINT(...) ((void)0)
+#else
+#define DEBUG_PRINT(...) sync_out.println(__va_args__)
+#endif
+
 
 // ---------------------------------------------------------------------
 // Morton encoding (1->1 relation)
@@ -140,11 +139,11 @@ void k_binning_pass(
 	barrier& barrier,
 	const morton_t* u_sort_begin,
 	const morton_t* u_sort_end,
-	std::vector<morton_t>& u_sort_alt,
+	std::vector<morton_t>& u_sort_alt, // output
 	const int shift
 )
 {
-	sync_out.println("Binning tid ", tid, " started. (shift=", shift, ")");
+	DEBUG_PRINT("[tid ", tid, "] started. (Binning, shift=", shift, ")");
 
 	int local_bucket[BASE] = {};
 
@@ -196,7 +195,7 @@ void k_binning_pass(
 		              u_sort_alt[local_bucket[DIGITS(code, shift)]++] = code;
 	              });
 
-	sync_out.println("Binning tid ", tid, " ended. (shift=", shift, ")");
+	DEBUG_PRINT("[tid ", tid, "] ended. (Binning, shift=", shift, ")");
 }
 
 template <typename T>
@@ -359,7 +358,6 @@ int main(const int argc, const char* argv[])
 		return 1;
 	}
 
-
 	//constexpr auto n = 1 << 20; // ~1M
 	constexpr auto n = 1920 * 1080; // ~2M
 
@@ -381,22 +379,29 @@ int main(const int argc, const char* argv[])
 
 	BS::timer timer;
 
-
 	barrier sort_barrier(n_threads);
 
 	timer.start();
 
 	dispatch_morton_code(n_threads, u_points, u_morton, min_coord, range).wait();
+
+	auto morton_timestamp = timer.current_ms();
+
 	dispatch_binning_pass(n_threads, sort_barrier, u_morton, u_morton_alt, 0).wait();
 	dispatch_binning_pass(n_threads, sort_barrier, u_morton_alt, u_morton, 8).wait();
 	dispatch_binning_pass(n_threads, sort_barrier, u_morton, u_morton_alt, 16).wait();
 	dispatch_binning_pass(n_threads, sort_barrier, u_morton_alt, u_morton, 24).wait();
 
+	auto sort_timestamp = timer.current_ms() - morton_timestamp;
+
 	timer.stop();
 
+	std::cout << "==========================\n";
+	std::cout << " Total Time spent: " << timer.ms() << " ms\n";
 	std::cout << "--------------------------\n";
-	std::cout << " Time spent: " << timer.ms() << " ms\n";
-	std::cout << "--------------------------\n";
+	std::cout << " Morton: " << morton_timestamp << " ms\n";
+	std::cout << " Sort: " << sort_timestamp << " ms\n";
+	std::cout << "==========================\n";
 
 	const auto is_sorted = std::is_sorted(u_morton.begin(), u_morton.end());
 	std::cout << "Is sorted: " << std::boolalpha
